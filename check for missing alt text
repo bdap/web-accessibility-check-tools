@@ -1,0 +1,9 @@
+// Get all images on the page
+const images = document.querySelectorAll('img');
+
+// Add a red border to images that are missing alternative text
+images.forEach(function(image) {
+  if (!image.hasAttribute('alt') || image.getAttribute('alt').length === 0) {
+    image.style.border = '2px solid red';
+  }
+});
