@@ -1,9 +1,101 @@
-// Get all images on the page
-const images = document.querySelectorAll('img');
+function highlightImagesWithoutAlt() {
+  // Get all images on the page
+  const images = document.querySelectorAll('img');
 
-// Add a red border to images that are missing alternative text
-images.forEach(function(image) {
-  if (!image.hasAttribute('alt') || image.getAttribute('alt').length === 0) {
-    image.style.border = '2px solid red';
+  // Iterate over each image
+  images.forEach(function(image) {
+    // Check if the image is missing an alt attribute or has an empty alt attribute
+    if (!image.hasAttribute('alt') || image.getAttribute('alt').length === 0) {
+      // Add a red border to the image
+      image.style.border = '2px solid red';
+    }
+  });
+}
+
+
+function highlightFaultyMediaElements() {
+  // Get all audio and video elements on the page
+  const mediaElements = document.querySelectorAll('audio, video');
+  // Iterate over each media element
+  mediaElements.forEach(function(mediaElement) {
+    // Check if the media element has a text track with kind "captions" or "subtitles"
+    const textTracks = mediaElement.textTracks;
+    let hasCaptions = false;
+    for (let i = 0; i < textTracks.length; i++) {
+      if (textTracks[i].kind === 'captions' || textTracks[i].kind === 'subtitles') {
+        hasCaptions = true;
+        break;
+      }
+    }
+    // If the media element does not have captions, check if it has a transcript
+    if (!hasCaptions) {
+      if (!mediaElement.hasAttribute('transcript') || mediaElement.getAttribute('transcript').length === 0) {
+        // Add a red border to the media element
+        mediaElement.style.border = '2px solid red';
+      }
+    }
+  });
+}
+
+function checkLinkAndButtonLabels() {
+  const elements = document.querySelectorAll("a, button");
+  let unlabeledElements = [];
+  elements.forEach((element) => {
+    if (element.innerText === "") {
+      unlabeledElements.push(element);
+      element.style.border = "2px solid red";
+      element.insertAdjacentHTML(
+        "beforeend",
+        '<span style="color: red;">Error: Element is not properly labeled</span>'
+      );
+    }
+  });
+  if (unlabeledElements.length === 0) {
+    console.log("All links and buttons are properly labeled.");
+  } else {
+    console.log("The following elements are not properly labeled:");
+    unlabeledElements.forEach((element) => {
+      console.log(element);
+    });
   }
-});
+}
+
+
+function testKeyboardAccessibility() {
+  // Check that all interactive elements (such as links and buttons) have a focus state
+  const interactiveElements = document.querySelectorAll('a, button, input, select, textarea');
+  interactiveElements.forEach(function(element) {
+    if (!window.getComputedStyle(element).outline) {
+      console.error(`Element ${element} is missing a focus state`);
+      element.style.border = '2px solid red';
+    }
+  });
+
+  // Check that all form elements (such as text fields and drop-down menus) can be focused and filled in using the keyboard
+  const formElements = document.querySelectorAll('input, select, textarea');
+  formElements.forEach(function(element) {
+    element.focus();
+    if (document.activeElement !== element) {
+      console.error(`Element ${element} cannot be focused using the keyboard`);
+      element.style.border = '2px solid red';
+    }
+    element.value = 'test';
+    if (element.value !== 'test') {
+      console.error(`Element ${element} cannot be filled in using the keyboard`);
+      element.style.border = '2px solid red';
+    }
+  });
+
+  // Check that all interactive elements can be triggered using the keyboard
+  interactiveElements.forEach(function(element) {
+    element.focus();
+    element.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}));
+    if (!element.dispatchEvent(new Event('click'))) {
+      console.error(`Element ${element} cannot be triggered using the keyboard`);
+      element.style.border = '2px solid red';
+    }
+  });
+
+  console.log('All functionality has been checked for keyboard accessibility');
+}
+
